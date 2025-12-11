@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Advanced Portfolio — Md. Sheran Asgar</title>
+
+  <!-- Fonts: system friendly stack to keep file self-contained -->
+  <style>
+    :root{
+      --bg: #0f1724;
+      --card: #0b1220;
+      --muted: #94a3b8;
+      --text: #e6eef8;
+      --accent: #06b6d4;
+      --accent-2: #7c3aed;
+      --glass: rgba(255,255,255,0.03);
+      --radius: 14px;
+      --gap: 20px;
+      --max-width: 1200px;
+      --shadow: 0 10px 30px rgba(2,6,23,0.6);
+      --ease: cubic-bezier(.2,.9,.3,1);
+    }
+
+    /* Light mode variables (will toggle) */
+    :root[data-theme="light"]{
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --muted: #475569;
+      --text: #071728;
+      --glass: rgba(3,7,18,0.02);
+      --shadow: 0 8px 24px rgba(12,20,40,0.06);
+    }
+
+    /* Base reset */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.08), transparent 6%),
+                  radial-gradient(800px 400px at 90% 90%, rgba(6,182,212,0.06), transparent 6%),
+                  var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      padding:32px 20px;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      gap:24px;
+    }
+
+    .page{
+      width:100%;
+      max-width:var(--max-width);
+    }
+
+    /* Header / Nav */
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      text-decoration:none;
+      color:inherit;
+    }
+    .logo{
+      width:56px;height:56px;border-radius:12px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;color:white;font-size:18px;flex:0 0 56px;
+      box-shadow:var(--shadow);
+    }
+    .brand-info{line-height:1}
+    .brand-info .name{font-weight:700;font-size:18px}
+    .brand-info .role{font-size:13px;color:var(--muted);margin-top:2px}
+
+    nav{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .nav-links{display:flex;gap:12px}
+    .nav-links a{
+      color:var(--muted);text-decoration:none;font-weight:600;padding:8px 10px;border-radius:10px;
+      transition:all 220ms var(--ease);
+    }
+    .nav-links a:hover, .nav-links a:focus{color:var(--text);background:var(--glass);transform:translateY(-2px)}
+
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn{
+      background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);
+      padding:8px 12px;border-radius:10px;font-weight:700;cursor:pointer;
+    }
+    .btn.ghost{background:transparent;border:0;padding:8px}
+
+    /* Grid layout */
+    .layout{
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:var(--gap);
+    }
+    main{min-width:0}
+    aside{min-width:0}
+
+    /* Hero card */
+    .hero{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius:var(--radius);
+      padding:32px;
+      box-shadow:var(--shadow);
+      display:flex;
+      gap:20px;
+      align-items:center;
+      overflow:hidden;
+    }
+    .hero-left{flex:1}
+    .title{font-size:28px;margin:0 0 6px 0}
+    .subtitle{color:var(--muted);margin:0 0 16px 0}
+    .cta-row{display:flex;gap:12px;align-items:center}
+    .primary{
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      color:white;padding:10px 14px;border-radius:12px;border:0;font-weight:700;cursor:pointer;
+      box-shadow:0 8px 20px rgba(12,18,40,0.35);
+      transition:transform 240ms var(--ease), box-shadow 240ms var(--ease);
+    }
+    .primary:hover{transform:translateY(-4px)}
+    .secondary{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px 12px;border-radius:10px;color:var(--text);cursor:pointer}
+
+    .hero-art{
+      width:240px;height:160px;border-radius:12px;flex:0 0 240px;
+      background:
+        linear-gradient(135deg, rgba(124,58,237,0.15), rgba(6,182,212,0.08)),
+        linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      display:flex;align-items:center;justify-content:center;
+      color:var(--text);font-weight:700;backdrop-filter: blur(6px);
+    }
+
+    /* Sections */
+    section.card{
+      margin-top:18px;
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:20px;
+      box-shadow:var(--shadow);
+    }
+
+    /* Skills grid */
+    .skills{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(120px,1fr));
+      gap:12px;
+    }
+    .skill{
+      padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      text-align:center;font-weight:700;color:var(--text);
+      border:1px solid rgba(255,255,255,0.02);
+      transition:transform 180ms var(--ease);
+    }
+    .skill:hover{transform:translateY(-6px)}
+
+    /* Projects masonry */
+    .projects{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+    }
+    .project{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      padding:14px;border-radius:12px;display:flex;flex-direction:column;gap:10px;
+      cursor:pointer;border:1px solid rgba(255,255,255,0.02);
+      transition:transform 220ms var(--ease), box-shadow 220ms var(--ease);
+    }
+    .project:hover{transform:translateY(-8px);box-shadow:0 18px 40px rgba(2,6,23,0.45)}
+    .project img{width:100%;height:120px;object-fit:cover;border-radius:8px}
+    .project .meta{display:flex;justify-content:space-between;align-items:center}
+
+    /* Responsive columns for projects */
+    @media (max-width:1100px){
+      .projects{grid-template-columns:repeat(2,1fr)}
+      .layout{grid-template-columns:1fr 320px}
+    }
+    @media (max-width:760px){
+      body{padding:18px}
+      .layout{grid-template-columns:1fr;gap:12px}
+      .hero{flex-direction:column;align-items:flex-start}
+      .hero-art{width:100%;height:140px}
+      .projects{grid-template-columns:1fr}
+      nav .nav-links{display:none}
+      .controls .menu-toggle{display:inline-block}
+    }
+
+    /* Aside (contact + socials) */
+    .aside-top{display:flex;flex-direction:column;gap:12px}
+    .card-small{padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);}
+
+    /* Modal details for project view */
+    .modal{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:24px;
+      background:linear-gradient(rgba(1,4,9,0.6), rgba(1,4,9,0.6));z-index:60;
+    }
+    .modal.open{display:flex}
+    .modal-card{width:100%;max-width:900px;background:var(--card);border-radius:12px;padding:18px;box-shadow:0 30px 90px rgba(0,0,0,0.7)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .close{background:transparent;border:0;color:var(--muted);font-size:18px;cursor:pointer}
+
+    /* subtle floating animation on hero art */
+    @keyframes floaty { 0%{transform:translateY(0)}50%{transform:translateY(-8px)}100%{transform:translateY(0)} }
+    .hero-art{animation:floaty 6s ease-in-out infinite}
+
+    /* form */
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type="text"], input[type="email"], textarea{
+      width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);
+    }
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .form-row.single{grid-template-columns:1fr}
+
+    /* footer */
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px;padding:12px}
+
+    /* small helpers */
+    .muted{color:var(--muted);font-size:13px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--glass);font-weight:700;color:var(--text);font-size:13px}
+    a.icon{opacity:0.9}
+
+    /* focus visible for accessibility */
+    a:focus, button:focus, input:focus, textarea:focus{outline:3px solid rgba(6,182,212,0.12);outline-offset:3px}
+  </style>
+</head>
+<body>
+
+  <div class="page" role="document">
+
+    <!-- Header -->
+    <header>
+      <a class="brand" href="#hero" aria-label="Go to top">
+        <div class="logo" aria-hidden="true">SA</div>
+        <div class="brand-info">
+          <div class="name">Md. Sheran Asgar</div>
+          <div class="role">Full-stack developer • Student</div>
+        </div>
+      </a>
+
+      <nav aria-label="Main navigation">
+        <div class="nav-links" role="menubar">
+          <a href="#about" role="menuitem">About</a>
+          <a href="#projects" role="menuitem">Projects</a>
+          <a href="#skills" role="menuitem">Skills</a>
+          <a href="#contact" role="menuitem">Contact</a>
+        </div>
+
+        <div class="controls">
+          <button class="btn ghost" id="themeToggle" aria-pressed="false" title="Toggle theme">Toggle theme</button>
+          <button class="btn menu-toggle" id="mobileMenu" aria-expanded="false" style="display:none">Menu</button>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Layout -->
+    <div class="layout">
+
+      <!-- Main column -->
+      <main>
+
+        <!-- Hero -->
+        <section class="hero" id="hero" aria-labelledby="heroTitle">
+          <div class="hero-left">
+            <h1 class="title" id="heroTitle">Hi, I build elegant web apps and tools</h1>
+            <p class="subtitle">I focus on accessible, high-performance interfaces and clean code. I code in JavaScript, Java, and Python.</p>
+
+            <div class="cta-row">
+              <button class="primary" id="viewProjects">View projects</button>
+              <a href="#contact" class="secondary">Get in touch</a>
+              <span class="pill">Open to internships</span>
+            </div>
+
+            <div style="margin-top:18px" class="muted">Experience: personal projects, game dev in Java, tools and utilities. GitHub: <a href="https://github.com/Sheran2004" target="_blank" rel="noopener" class="muted">github.com/Sheran2004</a></div>
+          </div>
+
+          <div class="hero-art" aria-hidden="true">
+            <svg width="140" height="100" viewBox="0 0 140 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 8px 20px rgba(12,18,40,0.35))">
+              <rect x="4" y="8" width="132" height="84" rx="12" fill="url(#g)"/>
+              <defs>
+                <linearGradient id="g" x1="0" x2="1">
+                  <stop offset="0" stop-color="#7c3aed" stop-opacity="0.9"/>
+                  <stop offset="1" stop-color="#06b6d4" stop-opacity="0.9"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </section>
+
+        <!-- About -->
+        <section class="card" id="about" aria-labelledby="aboutTitle">
+          <h2 id="aboutTitle">About</h2>
+          <p class="muted">I am a computer science student and developer. I enjoy building full-stack web apps, small games, and automation tools. My focus is readable code, accessible UX, and performance.</p>
+
+          <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+            <div class="pill">Web Development</div>
+            <div class="pill">Game Dev (Java)</div>
+            <div class="pill">Algorithms</div>
+            <div class="pill">UI Design</div>
+          </div>
+        </section>
+
+        <!-- Projects -->
+        <section class="card" id="projects" aria-labelledby="projectsTitle">
+          <h2 id="projectsTitle">Projects</h2>
+
+          <div class="projects" id="projectGrid" role="list">
+            <!-- Project cards: clicking opens modal with details -->
+            <article class="project" role="listitem" tabindex="0" data-title="Flappy Bird Clone (Java)" data-desc="Desktop game built in Java with collision detection, scoring, pause/restart and exported as runnable JAR." data-img="" data-links='{"repo":"#"}'>
+              <img src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop&crop=entropy" alt="Flappy bird project thumbnail" loading="lazy">
+              <div>
+                <strong>Flappy Bird Clone (Java)</strong>
+                <div class="meta muted" style="margin-top:8px">Game • Java • Desktop</div>
+              </div>
+            </article>
+
+            <article class="project" role="listitem" tabindex="0" data-title="Resume to Image Converter" data-desc="Generates clean resume images from text templates and exports PNG. Includes multiple templates." data-img="" data-links='{"repo":"#"}'>
+              <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop&crop=entropy" alt="Resume image tool thumbnail" loading="lazy">
+              <div>
+                <strong>Resume to Image Converter</strong>
+                <div class="meta muted" style="margin-top:8px">Tool • JS • Exports</div>
+              </div>
+            </article>
+
+            <article class="project" role="listitem" tabindex="0" data-title="Triangle Classifier" data-desc="Decision-table based triangle classifier with test suite, input validation and test reports." data-img="" data-links='{"repo":"#"}'>
+              <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&auto=format&fit=crop&crop=entropy" alt="Triangle classifier thumbnail" loading="lazy">
+              <div>
+                <strong>Triangle Classifier</strong>
+                <div class="meta muted" style="margin-top:8px">Algorithm • Testing • Java</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Skills -->
+        <section class="card" id="skills" aria-labelledby="skillsTitle">
+          <h2 id="skillsTitle">Skills</h2>
+          <div class="skills">
+            <div class="skill">HTML & CSS</div>
+            <div class="skill">JavaScript</div>
+            <div class="skill">React</div>
+            <div class="skill">Java</div>
+            <div class="skill">Python</div>
+            <div class="skill">Algorithms</div>
+            <div class="skill">Git</div>
+            <div class="skill">UI & Accessibility</div>
+            <div class="skill">Performance</div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="aside-top">
+          <div class="card-small">
+            <h3 style="margin:0 0 8px 0">Contact</h3>
+            <p class="muted" style="margin:0 0 12px 0">Prefer email for professional messages.</p>
+            <form id="contactForm" novalidate>
+              <div class="form-row">
+                <div>
+                  <label for="cname">Name</label>
+                  <input id="cname" type="text" required placeholder="Your name">
+                </div>
+                <div>
+                  <label for="cemail">Email</label>
+                  <input id="cemail" type="email" required placeholder="you@example.com">
+                </div>
+              </div>
+
+              <div class="form-row single" style="margin-top:8px">
+                <div>
+                  <label for="cmsg">Message</label>
+                  <textarea id="cmsg" rows="4" required placeholder="Brief message"></textarea>
+                </div>
+              </div>
+
+              <div style="margin-top:10px;display:flex;gap:8px">
+                <button class="primary" type="submit">Send</button>
+                <button type="button" class="btn ghost" id="clearForm">Clear</button>
+              </div>
+
+              <div id="formStatus" class="muted" style="margin-top:8px;display:none"></div>
+            </form>
+          </div>
+
+          <div class="card-small" style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+            <strong>Quick links</strong>
+            <a class="icon muted" href="https://github.com/Sheran2004" target="_blank" rel="noopener">GitHub</a>
+            <a class="icon muted" href="#" target="_blank" rel="noopener">LinkedIn</a>
+            <a class="icon muted" href="#" target="_blank" rel="noopener">Resume (PDF)</a>
+          </div>
+        </div>
+
+        <div style="height:18px"></div>
+
+        <div class="card-small">
+          <strong>Availability</strong>
+          <p class="muted" style="margin:8px 0 0 0">Open to internships and freelance projects. Response time: 1-3 business days.</p>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      <div class="muted">© <span id="year"></span> Md. Sheran Asgar • Built with modern CSS</div>
+    </footer>
+  </div>
+
+  <!-- Project Modal -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card" role="document">
+      <div class="modal-header">
+        <h3 id="modalTitle">Project Title</h3>
+        <div>
+          <button class="btn" id="modalRepo">Repo</button>
+          <button class="close" id="modalClose" aria-label="Close">✕</button>
+        </div>
+      </div>
+      <div id="modalContent" style="margin-top:12px;color:var(--muted)"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Basic interactions: theme toggle, project modal, form validation, smooth scroll
+
+    (function(){
+      const root = document.documentElement;
+      const themeToggle = document.getElementById('themeToggle');
+      // initialize theme from localStorage
+      const saved = localStorage.getItem('theme');
+      if(saved === 'light') root.setAttribute('data-theme','light');
+
+      themeToggle.addEventListener('click', () => {
+        const isLight = root.getAttribute('data-theme') === 'light';
+        if(isLight){
+          root.removeAttribute('data-theme');
+          localStorage.removeItem('theme');
+          themeToggle.setAttribute('aria-pressed','false');
+        } else {
+          root.setAttribute('data-theme','light');
+          localStorage.setItem('theme','light');
+          themeToggle.setAttribute('aria-pressed','true');
+        }
+      });
+
+      // Scroll to projects button
+      document.getElementById('viewProjects').addEventListener('click', () => {
+        document.getElementById('projects').scrollIntoView({behavior:'smooth',block:'start'});
+      });
+
+      // Project modal open
+      const modal = document.getElementById('modal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalContent = document.getElementById('modalContent');
+      const modalRepo = document.getElementById('modalRepo');
+      let currentLink = '#';
+
+      function openModal(title, desc, links){
+        modalTitle.textContent = title;
+        modalContent.textContent = desc;
+        currentLink = links && links.repo ? links.repo : '#';
+        modalRepo.onclick = () => { if(currentLink!=='#') window.open(currentLink,'_blank') };
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden','false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal(){
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden','true');
+        document.body.style.overflow = '';
+      }
+
+      // click project cards
+      document.querySelectorAll('.project').forEach(card => {
+        card.addEventListener('click', () => {
+          const title = card.dataset.title || card.querySelector('strong').textContent;
+          const desc = card.dataset.desc || 'Project details';
+          const links = JSON.parse(card.dataset.links || '{}');
+          openModal(title, desc, links);
+        });
+        // keyboard accessible
+        card.addEventListener('keydown', (e) => {
+          if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+        });
+      });
+
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+      document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeModal(); });
+
+      // Contact form: simple client-side validation and fake send
+      const contactForm = document.getElementById('contactForm');
+      const formStatus = document.getElementById('formStatus');
+      const clearBtn = document.getElementById('clearForm');
+
+      contactForm.addEventListener('submit', function(e){
+        e.preventDefault();
+        formStatus.style.display = 'none';
+
+        const name = document.getElementById('cname').value.trim();
+        const email = document.getElementById('cemail').value.trim();
+        const msg = document.getElementById('cmsg').value.trim();
+
+        if(!name || !email || !msg){
+          formStatus.style.display = 'block';
+          formStatus.textContent = 'Please fill all fields.';
+          return;
+        }
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+          formStatus.style.display = 'block';
+          formStatus.textContent = 'Please enter a valid email.';
+          return;
+        }
+
+        // Simulate send (replace with actual endpoint when available)
+        formStatus.style.display = 'block';
+        formStatus.textContent = 'Sending...';
+        setTimeout(() => {
+          formStatus.textContent = 'Message sent. Thank you!';
+          contactForm.reset();
+        }, 900);
+      });
+
+      clearBtn.addEventListener('click', () => { contactForm.reset(); formStatus.style.display = 'none'; });
+
+      // Footer year
+      document.getElementById('year').textContent = new Date().getFullYear();
+
+      // Mobile nav reveal toggle if needed
+      const menuToggle = document.getElementById('mobileMenu');
+      const navLinks = document.querySelector('.nav-links');
+      if(menuToggle){
+        menuToggle.style.display = ''; // show if styled
+        menuToggle.addEventListener('click', () => {
+          const expanded = menuToggle.getAttribute('aria-expanded') === 'true';
+          menuToggle.setAttribute('aria-expanded', String(!expanded));
+          navLinks.style.display = expanded ? 'none' : 'flex';
+        });
+      }
+
+      // small accessibility: focus trap for modal (basic)
+      modal.addEventListener('keydown', (e) => {
+        if(e.key === 'Tab'){
+          const focusable = modal.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])');
+          if(focusable.length === 0) return;
+          const first = focusable[0], last = focusable[focusable.length -1];
+          if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+          else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+        }
+      });
+
+    })();
+  </script>
+</body>
+</html>

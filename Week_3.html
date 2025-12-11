@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Task Manager</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f4f9;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    #taskInput {
+      width: 70%;
+      padding: 10px;
+      border: 1px solid #aaa;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      background: #4c6ef5;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+
+    button:hover {
+      background: #364fc7;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    li {
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 5px solid #4c6ef5;
+    }
+
+    .done {
+      text-decoration: line-through;
+      color: #777;
+      border-left-color: green;
+    }
+
+    .deleteBtn {
+      background: red;
+      padding: 6px 10px;
+      border-radius: 4px;
+    }
+
+    .deleteBtn:hover {
+      background: #b30000;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <h1>Task Manager</h1>
+
+  <input id="taskInput" type="text" placeholder="Enter your task">
+  <button onclick="addTask()">Add Task</button>
+
+  <ul id="taskList"></ul>
+
+  <script>
+    function addTask() {
+      let taskText = document.getElementById("taskInput").value;
+
+      if (taskText.trim() === "") {
+        alert("Please enter a task");
+        return;
+      }
+
+      let li = document.createElement("li");
+
+      // clicking task marks it complete
+      li.onclick = function () {
+        li.classList.toggle("done");
+      };
+
+      li.textContent = taskText;
+
+      // delete button
+      let delBtn = document.createElement("button");
+      delBtn.textContent = "Delete";
+      delBtn.className = "deleteBtn";
+
+      delBtn.onclick = function (event) {
+        event.stopPropagation();
+        li.remove();
+      };
+
+      li.appendChild(delBtn);
+
+      document.getElementById("taskList").appendChild(li);
+      document.getElementById("taskInput").value = "";
+    }
+  </script>
+
+</body>
+</html>

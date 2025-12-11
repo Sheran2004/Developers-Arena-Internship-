@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Restaurant</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #f7f7f7;
+        }
+
+        /* NAVBAR */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ff6347;
+            padding: 15px 20px;
+            color: white;
+        }
+
+        nav h2 {
+            margin: 0;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* MOBILE MENU */
+        #menuBtn {
+            display: none;
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        @media(max-width: 768px) {
+            nav ul {
+                display: none;
+                flex-direction: column;
+                background: #ff6347;
+                width: 100%;
+                padding: 10px;
+            }
+
+            nav ul.active {
+                display: flex;
+            }
+
+            #menuBtn {
+                display: block;
+            }
+        }
+
+        /* HERO */
+        .hero {
+            padding: 60px 20px;
+            text-align: center;
+            background: url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092') center/cover no-repeat;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 40px;
+        }
+
+        .hero p {
+            font-size: 18px;
+        }
+
+        /* SECTIONS */
+        section {
+            max-width: 900px;
+            margin: auto;
+            padding: 30px 20px;
+            background: white;
+            margin-top: 25px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            color: #ff6347;
+        }
+
+        /* MENU */
+        .menu-item {
+            background: #fff0ec;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        /* CONTACT FORM */
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            background: #ff6347;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            margin-top: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #d94a35;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #ff6347;
+            color: white;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <nav>
+        <h2>Foodie's Restaurant</h2>
+        <span id="menuBtn">☰</span>
+        <ul id="navLinks">
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#menu">Menu</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- HERO -->
+    <div class="hero" id="hero">
+        <h1>Welcome to Foodie's</h1>
+        <p>Fresh, delicious, and made with love.</p>
+    </div>
+
+    <!-- MENU SECTION -->
+    <section id="menu">
+        <h2>Our Menu</h2>
+
+        <div class="menu-item">
+            <h3>Margherita Pizza - ₹199</h3>
+            <p>Classic pizza with fresh tomatoes and cheese.</p>
+        </div>
+
+        <div class="menu-item">
+            <h3>Veg Burger - ₹99</h3>
+            <p>Crispy veg patty with fresh lettuce and sauces.</p>
+        </div>
+
+        <div class="menu-item">
+            <h3>Pasta Alfredo - ₹149</h3>
+            <p>Creamy white sauce pasta cooked perfectly.</p>
+        </div>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section id="about">
+        <h2>About Us</h2>
+        <p>
+            We are a local family restaurant serving fresh and tasty dishes.
+            Our mission is simple: great food, great environment, and great service.
+        </p>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <form>
+            <input type="text" placeholder="Your Name" required>
+            <input type="email" placeholder="Your Email" required>
+            <textarea rows="4" placeholder="Your Message" required></textarea>
+            <button type="submit">Send Message</button>
+        </form>
+    </section>
+
+    <footer>
+        © 2025 Foodie's Restaurant. All rights reserved.
+    </footer>
+
+    <!-- MOBILE MENU TOGGLE -->
+    <script>
+        const menuBtn = document.getElementById("menuBtn");
+        const navLinks = document.getElementById("navLinks");
+
+        menuBtn.onclick = () => {
+            navLinks.classList.toggle("active");
+        }
+    </script>
+
+</body>
+</html>
