@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Personal Blog - CRUD with LocalStorage</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        #blogForm, #editForm {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 8px 14px;
+            background: #4c6ef5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #3b5bcc;
+        }
+        .post {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 14px;
+            margin-right: 6px;
+        }
+        .delete {
+            background: red;
+        }
+        .delete:hover {
+            background: darkred;
+        }
+    </style>
+</head>
+<body>
+
+<h1>My Personal Blog</h1>
+
+<!-- CREATE NEW POST -->
+<div id="blogForm">
+    <h3>Create New Post</h3>
+
+    <input type="text" id="title" placeholder="Post Title">
+    <textarea id="content" rows="4" placeholder="Write your post..."></textarea>
+    <button onclick="createPost()">Publish</button>
+</div>
+
+<!-- EDIT POST FORM (hidden by default) -->
+<div id="editForm" style="display:none;">
+    <h3>Edit Post</h3>
+
+    <input type="text" id="editTitle">
+    <textarea id="editContent" rows="4"></textarea>
+    <button onclick="updatePost()">Update</button>
+    <button onclick="cancelEdit()" style="background:#999; margin-left:10px;">Cancel</button>
+</div>
+
+<h2>All Posts</h2>
+<div id="postList"></div>
+
+
+<script>
+    let posts = JSON.parse(localStorage.getItem("posts")) || [];
+    let editIndex = null;
+
+    // Display posts
+    function displayPosts() {
+        const postList = document.getElementById("postList");
+        postList.innerHTML = "";
+
+        posts.forEach((post, index) => {
+            postList.innerHTML += `
+                <div class="post">
+                    <h3>${post.title}</h3>
+                    <p>${post.content}</p>
+
+                    <button class="btn-small" onclick="editPost(${index})">Edit</button>
+                    <button class="btn-small delete" onclick="deletePost(${index})">Delete</button>
+                </div>
+            `;
+        });
+    }
+
+    // CREATE
+    function createPost() {
+        const title = document.getElementById("title").value.trim();
+        const content = document.getElementById("content").value.trim();
+
+        if (!title || !content) {
+            alert("Please fill all fields");
+            return;
+        }
+
+        posts.push({ title, content });
+        localStorage.setItem("posts", JSON.stringify(posts));
+
+        document.getElementById("title").value = "";
+        document.getElementById("content").value = "";
+
+        displayPosts();
+    }
+
+    // DELETE
+    function deletePost(index) {
+        if (confirm("Delete this post?")) {
+            posts.splice(index, 1);
+            localStorage.setItem("posts", JSON.stringify(posts));
+            displayPosts();
+        }
+    }
+
+    // EDIT (load data into form)
+    function editPost(index) {
+        editIndex = index;
+        document.getElementById("editTitle").value = posts[index].title;
+        document.getElementById("editContent").value = posts[index].content;
+
+        document.getElementById("blogForm").style.display = "none";
+        document.getElementById("editForm").style.display = "block";
+    }
+
+    // UPDATE
+    function updatePost() {
+        const updatedTitle = document.getElementById("editTitle").value.trim();
+        const updatedContent = document.getElementById("editContent").value.trim();
+
+        if (!updatedTitle || !updatedContent) {
+            alert("Please fill all fields");
+            return;
+        }
+
+        posts[editIndex] = {
+            title: updatedTitle,
+            content: updatedContent
+        };
+
+        localStorage.setItem("posts", JSON.stringify(posts));
+
+        cancelEdit();
+        displayPosts();
+    }
+
+    // CANCEL EDIT
+    function cancelEdit() {
+        editIndex = null;
+        document.getElementById("editForm").style.display = "none";
+        document.getElementById("blogForm").style.display = "block";
+    }
+
+    // load posts on page load
+    displayPosts();
+</script>
+
+</body>
+</html>
