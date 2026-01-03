@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>LocalShop — Demo E-commerce Frontend</title>
+
+  <!-- React + ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    /* Basic, clean responsive styles */
+    :root{
+      --bg:#f6f8fb;--card:#ffffff;--muted:#6b7280;--accent:#0f172a;--primary:#ef4444;--accent2:#06b6d4;
+      --radius:12px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--accent);-webkit-font-smoothing:antialiased;padding:18px;}
+    .app{max-width:1100px;margin:0 auto;}
+    header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+    .brand{display:flex;gap:12px;align-items:center;text-decoration:none;color:var(--accent)}
+    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--accent2));display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    nav{display:flex;gap:10px;align-items:center}
+    nav a{padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--accent);font-weight:600}
+    nav a.active{background:#fff;color:var(--primary);box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+    main{display:grid;grid-template-columns:1fr 320px;gap:20px}
+    @media (max-width:880px){main{grid-template-columns:1fr}}
+    .card{background:var(--card);padding:14px;border-radius:var(--radius);box-shadow:0 6px 18px rgba(2,6,23,0.06)}
+    .hero{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px}
+    .search{display:flex;gap:8px}
+    .input{padding:10px;border-radius:8px;border:1px solid #e6e9ef}
+    .btn{background:var(--primary);color:white;padding:10px 12px;border-radius:8px;border:0;cursor:pointer}
+    .btn.secondary{background:transparent;color:var(--primary);border:1px solid rgba(15,23,42,0.06)}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media (max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:560px){.grid{grid-template-columns:1fr}}
+    .product{display:flex;flex-direction:column;gap:10px}
+    .product img{width:100%;height:160px;object-fit:cover;border-radius:8px}
+    .price{font-weight:700}
+    .small{font-size:13px;color:var(--muted)}
+    .cart-item{display:flex;gap:12px;align-items:center}
+    .thumb{width:64px;height:64px;border-radius:8px;object-fit:cover}
+    .qty{display:flex;gap:6px;align-items:center}
+    .link{color:var(--accent2);text-decoration:none}
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:60;padding:16px}
+    .modal .card{max-width:800px;width:100%}
+    .muted{color:var(--muted)}
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+    .empty{padding:24px;text-align:center;color:var(--muted);border-radius:10px;background:linear-gradient(180deg,#fff,#fbfcff)}
+    .nav-count{background:#111;color:white;padding:4px 8px;border-radius:999px;font-size:13px;margin-left:6px}
+    .product-actions{display:flex;gap:8px;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    /* -------------------- Utilities & LocalStorage helpers -------------------- */
+    const STORAGE_KEYS = {
+      PRODUCTS: 'ls_products_demo_v1',
+      CART: 'ls_cart_demo_v1',
+      USERS: 'ls_users_demo_v1',
+      SESSION: 'ls_session_demo_v1',
+      ORDERS: 'ls_orders_demo_v1'
+    };
+
+    // Sample product data
+    const SAMPLE_PRODUCTS = [
+      { id: 'p1', title: 'Classic Margherita Pizza', price: 199, img: 'https://images.unsplash.com/photo-1601924582971-54a6a8d0f6f1?q=80&w=800&auto=format&fit=crop&crop=entropy', desc: 'Tomato, mozzarella and fresh basil.' },
+      { id: 'p2', title: 'Veggie Burger', price: 99, img: 'https://images.unsplash.com/photo-1550317138-10000687a72b?q=80&w=800&auto=format&fit=crop&crop=entropy', desc: 'Crispy patty, lettuce, and sauces.' },
+      { id: 'p3', title: 'Creamy Alfredo Pasta', price: 149, img: 'https://images.unsplash.com/photo-1546069901-eacef0df6022?q=80&w=800&auto=format&fit=crop&crop=entropy', desc: 'Pasta in rich white sauce.' },
+      { id: 'p4', title: 'Chocolate Cake Slice', price: 79, img: 'https://images.unsplash.com/photo-1542826386-28d5d5c7c1f0?q=80&w=800&auto=format&fit=crop&crop=entropy', desc: 'Rich moist chocolate cake.' },
+      { id: 'p5', title: 'Fresh Salad Bowl', price: 89, img: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=800&auto=format&fit=crop&crop=entropy', desc: 'Crunchy greens with vinaigrette.' },
+      { id: 'p6', title: 'Iced Coffee', price: 59, img: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=800&auto=format&fit=crop&crop=entropy', desc: 'Cold brew with ice.' }
+    ];
+
+    function lsGet(key, fallback=null){
+      try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e){ return fallback; }
+    }
+    function lsSet(key, value){
+      try{ localStorage.setItem(key, JSON.stringify(value)); } catch(e){}
+    }
+    // init products once
+    if(!lsGet(STORAGE_KEYS.PRODUCTS)){
+      lsSet(STORAGE_KEYS.PRODUCTS, SAMPLE_PRODUCTS);
+    }
+
+    /* -------------------- App -------------------- */
+    function App(){
+      const [products, setProducts] = useState(lsGet(STORAGE_KEYS.PRODUCTS, SAMPLE_PRODUCTS));
+      const [cart, setCart] = useState(lsGet(STORAGE_KEYS.CART, []));
+      const [route, setRoute] = useState(location.hash.replace('#','') || 'home');
+      const [user, setUser] = useState(lsGet(STORAGE_KEYS.SESSION, null));
+      const [query, setQuery] = useState('');
+      const [modalProduct, setModalProduct] = useState(null);
+
+      useEffect(()=>{
+        // sync with hash routing
+        function onHash(){
+          setRoute(location.hash.replace('#','') || 'home');
+        }
+        window.addEventListener('hashchange', onHash);
+        return ()=> window.removeEventListener('hashchange', onHash);
+      },[]);
+
+      useEffect(()=> lsSet(STORAGE_KEYS.CART, cart), [cart]);
+      useEffect(()=> lsSet(STORAGE_KEYS.SESSION, user), [user]);
+
+      // Cart operations
+      function addToCart(productId, qty=1){
+        setCart(prev=>{
+          const copy = [...prev];
+          const idx = copy.findIndex(i=>i.id===productId);
+          if(idx>=0){
+            copy[idx].qty += qty;
+          } else {
+            const p = products.find(x=>x.id===productId);
+            copy.push({ id: productId, title: p.title, price: p.price, img: p.img, qty });
+          }
+          return copy;
+        });
+        // jump to cart on add? keep on page (we won't route automatically)
+      }
+      function updateQty(productId, newQty){
+        setCart(prev => prev.map(item => item.id===productId ? {...item, qty: Math.max(1, newQty)} : item));
+      }
+      function removeFromCart(productId){
+        setCart(prev => prev.filter(i=>i.id !== productId));
+      }
+      function clearCart(){
+        setCart([]);
+      }
+
+      // Auth
+      function login(userObj){ setUser(userObj); lsSet(STORAGE_KEYS.SESSION, userObj); }
+      function logout(){ setUser(null); lsSet(STORAGE_KEYS.SESSION, null); }
+
+      // Orders (checkout)
+      function placeOrder(order){
+        const orders = lsGet(STORAGE_KEYS.ORDERS, []);
+        orders.unshift(order);
+        lsSet(STORAGE_KEYS.ORDERS, orders);
+        clearCart();
+        // navigate to orders or confirmation
+        location.hash = 'orders';
+      }
+
+      // product search filter
+      const filtered = products.filter(p => p.title.toLowerCase().includes(query.toLowerCase()) || p.desc.toLowerCase().includes(query.toLowerCase()));
+
+      return (
+        <div className="app">
+          <header>
+            <a className="brand" href="#home" onClick={()=>setRoute('home')}>
+              <div className="logo">LS</div>
+              <div>
+                <div style={{fontWeight:700}}>LocalShop</div>
+                <div className="small muted">Demo store</div>
+              </div>
+            </a>
+
+            <nav>
+              <a href="#home" className={route==='home'?'active':''}>Home</a>
+              <a href="#cart" className={route==='cart'?'active':''}>Cart <span className="nav-count">{cart.reduce((s,i)=>s+i.qty,0)}</span></a>
+              <a href="#orders" className={route==='orders'?'active':''}>Orders</a>
+              <a href="#auth" className={route==='auth'?'active':''}>{user ? 'Account' : 'Login'}</a>
+            </nav>
+          </header>
+
+          <main>
+            <div>
+              {/* Hero and search */}
+              <section className="card hero" aria-hidden>
+                <div>
+                  <h2 style={{margin:'0 0 6px 0'}}>Welcome to LocalShop</h2>
+                  <div className="muted">Browse items and try the demo checkout. All data is stored locally in your browser.</div>
+                </div>
+
+                <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                  <div className="search">
+                    <input className="input" placeholder="Search products..." value={query} onChange={e=>setQuery(e.target.value)} />
+                    <button className="btn" onClick={()=>{/* noop */}}>Search</button>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    {user ? (
+                      <div>
+                        <div className="small">Signed in as <strong>{user.name}</strong></div>
+                        <button className="btn secondary" onClick={()=>{logout(); alert('Logged out.')}}>Logout</button>
+                      </div>
+                    ) : (
+                      <div>
+                        <a className="link" href="#auth">Login or Register</a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              {/* Router views */}
+              {route === 'home' && (
+                <section className="card" style={{marginTop:12}}>
+                  <h3 style={{marginTop:0}}>Products</h3>
+                  {filtered.length === 0 ? <div className="empty">No products match your search.</div> : (
+                    <div className="grid" role="list">
+                      {filtered.map(p => (
+                        <article key={p.id} className="product card" role="listitem">
+                          <img src={p.img} alt={p.title} />
+                          <div>
+                            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                              <div style={{fontWeight:700}}>{p.title}</div>
+                              <div className="price">₹{p.price}</div>
+                            </div>
+                            <div className="small muted" style={{marginTop:6}}>{p.desc}</div>
+
+                            <div style={{marginTop:10}} className="product-actions">
+                              <button className="btn" onClick={()=>addToCart(p.id,1)}>Add to cart</button>
+                              <button className="btn secondary" onClick={()=>setModalProduct(p)}>Quick view</button>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {route === 'cart' && (
+                <section className="card" style={{marginTop:12}}>
+                  <h3 style={{marginTop:0}}>Your Cart</h3>
+                  {cart.length === 0 ? (
+                    <div className="empty">Your cart is empty. Browse products to add items.</div>
+                  ) : (
+                    <div style={{display:'grid',gap:12}}>
+                      {cart.map(item => (
+                        <div key={item.id} className="cart-item card" style={{alignItems:'center',padding:12}}>
+                          <img src={item.img} className="thumb" alt="" />
+                          <div style={{flex:1}}>
+                            <div style={{fontWeight:700}}>{item.title}</div>
+                            <div className="small muted">₹{item.price} each</div>
+                          </div>
+
+                          <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
+                            <div className="qty">
+                              <button className="btn secondary" onClick={()=>updateQty(item.id, item.qty-1)}>-</button>
+                              <div style={{padding:'6px 10px',borderRadius:8,background:'#fff'}}>{item.qty}</div>
+                              <button className="btn secondary" onClick={()=>updateQty(item.id, item.qty+1)}>+</button>
+                            </div>
+                            <div style={{marginTop:6}}>
+                              <button className="btn" onClick={()=>removeFromCart(item.id)}>Remove</button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
+                        <div>
+                          <div className="muted">Subtotal:</div>
+                          <div style={{fontWeight:700,fontSize:18}}>₹{cart.reduce((s,i)=>s + i.qty*i.price,0)}</div>
+                        </div>
+
+                        <div style={{display:'flex',gap:8}}>
+                          <button className="btn secondary" onClick={()=>clearCart()}>Clear</button>
+                          <button className="btn" onClick={()=>{
+                            if(!user){ location.hash='auth'; alert('Please login to continue to checkout.'); return; }
+                            location.hash='checkout';
+                          }}>Proceed to Checkout</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {route === 'checkout' && (
+                <section className="card" style={{marginTop:12}}>
+                  <h3 style={{marginTop:0}}>Checkout</h3>
+                  {cart.length === 0 ? <div className="empty">Your cart is empty.</div> : (
+                    <CheckoutForm user={user} cart={cart} onPlaceOrder={placeOrder} />
+                  )}
+                </section>
+              )}
+
+              {route === 'auth' && (
+                <section className="card" style={{marginTop:12}}>
+                  <AuthView onLogin={login} />
+                </section>
+              )}
+
+              {route === 'orders' && (
+                <section className="card" style={{marginTop:12}}>
+                  <h3 style={{marginTop:0}}>Your Orders</h3>
+                  <OrdersView />
+                </section>
+              )}
+            </div>
+
+            {/* Sidebar */}
+            <aside>
+              <div className="card">
+                <h4 style={{marginTop:0}}>Cart Summary</h4>
+                {cart.length === 0 ? <div className="small muted">No items yet.</div> : (
+                  <div style={{display:'grid',gap:10}}>
+                    {cart.map(i=>(
+                      <div key={i.id} style={{display:'flex',gap:8,alignItems:'center'}}>
+                        <img src={i.img} className="thumb" alt="" />
+                        <div style={{flex:1}}>
+                          <div style={{fontWeight:700}}>{i.title}</div>
+                          <div className="small muted">₹{i.price} x {i.qty}</div>
+                        </div>
+                        <div style={{fontWeight:700}}>₹{i.qty * i.price}</div>
+                      </div>
+                    ))}
+                    <hr />
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                      <div className="muted">Total</div>
+                      <div style={{fontWeight:800}}>₹{cart.reduce((s,i)=>s + i.qty*i.price,0)}</div>
+                    </div>
+                    <div style={{marginTop:8}}>
+                      <button className="btn" style={{width:'100%'}} onClick={()=>location.hash='cart'}>View Cart</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div style={{height:12}}></div>
+
+              <div className="card">
+                <h4 style={{marginTop:0}}>Account</h4>
+                {user ? (
+                  <div>
+                    <div style={{fontWeight:700}}>{user.name}</div>
+                    <div className="small muted">{user.email}</div>
+                    <div style={{marginTop:8}}>
+                      <button className="btn secondary" onClick={()=>{ location.hash='orders' }}>My Orders</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="small muted">Not signed in</div>
+                    <div style={{marginTop:8}}>
+                      <button className="btn" onClick={()=>location.hash='auth'}>Login / Register</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </aside>
+          </main>
+
+          <footer>
+            © {new Date().getFullYear()} LocalShop • Demo frontend — data stored locally
+          </footer>
+
+          {/* Product quick view modal */}
+          {modalProduct && (
+            <div className="modal" role="dialog" aria-modal="true">
+              <div className="card">
+                <div style={{display:'flex',gap:12}}>
+                  <img src={modalProduct.img} alt="" style={{width:220,height:160,objectFit:'cover',borderRadius:8}} />
+                  <div style={{flex:1}}>
+                    <h3 style={{marginTop:0}}>{modalProduct.title}</h3>
+                    <div className="small muted">₹{modalProduct.price}</div>
+                    <p className="muted" style={{marginTop:8}}>{modalProduct.desc}</p>
+                    <div style={{marginTop:12,display:'flex',gap:8}}>
+                      <button className="btn" onClick={()=>{ addToCart(modalProduct.id,1); setModalProduct(null); }}>Add to cart</button>
+                      <button className="btn secondary" onClick={()=>setModalProduct(null)}>Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* -------------------- Checkout Form Component -------------------- */
+    function CheckoutForm({ user, cart, onPlaceOrder }){
+      const [name, setName] = useState(user ? user.name : '');
+      const [email, setEmail] = useState(user ? user.email : '');
+      const [address, setAddress] = useState('');
+      const [phone, setPhone] = useState('');
+      const [loading, setLoading] = useState(false);
+
+      const total = cart.reduce((s,i)=>s + i.qty*i.price,0);
+
+      function handleSubmit(e){
+        e.preventDefault();
+        if(!name || !email || !address) { alert('Please fill name, email and address'); return; }
+        setLoading(true);
+        // simulate API call
+        setTimeout(()=>{
+          const order = {
+            id: 'ORD-' + Date.now(),
+            date: new Date().toISOString(),
+            items: cart,
+            total,
+            customer: { name, email, address, phone },
+            status: 'Processing'
+          };
+          onPlaceOrder(order);
+          setLoading(false);
+          alert('Order placed successfully!');
+        }, 900);
+      }
+
+      return (
+        <form onSubmit={handleSubmit}>
+          <div style={{display:'grid',gap:8}}>
+            <label className="small muted">Name</label>
+            <input className="input" value={name} onChange={e=>setName(e.target.value)} />
+
+            <label className="small muted">Email</label>
+            <input className="input" type="email" value={email} onChange={e=>setEmail(e.target.value)} />
+
+            <label className="small muted">Address</label>
+            <textarea className="input" rows="3" value={address} onChange={e=>setAddress(e.target.value)} />
+
+            <label className="small muted">Phone (optional)</label>
+            <input className="input" value={phone} onChange={e=>setPhone(e.target.value)} />
+
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
+              <div className="muted">Total: <strong>₹{total}</strong></div>
+              <div style={{display:'flex',gap:8}}>
+                <button className="btn secondary" type="button" onClick={()=>location.hash='cart'}>Back to Cart</button>
+                <button className="btn" type="submit" disabled={loading}>{loading ? 'Placing...' : 'Place Order'}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      );
+    }
+
+    /* -------------------- Auth View (Login/Register) -------------------- */
+    function AuthView({ onLogin }){
+      const [tab, setTab] = useState('login'); // 'login' | 'register'
+      const [loginEmail, setLoginEmail] = useState('');
+      const [loginPass, setLoginPass] = useState('');
+      const [regName, setRegName] = useState('');
+      const [regEmail, setRegEmail] = useState('');
+      const [regPass, setRegPass] = useState('');
+
+      // load users list from localStorage
+      function getUsers(){ return lsGet(STORAGE_KEYS.USERS, []); }
+      function saveUsers(users){ lsSet(STORAGE_KEYS.USERS, users); }
+
+      function handleRegister(e){
+        e.preventDefault();
+        if(!regName || !regEmail || !regPass){ alert('Please fill all fields'); return; }
+        const users = getUsers();
+        if(users.some(u=>u.email === regEmail)){
+          alert('User already exists with this email');
+          return;
+        }
+        const newUser = { id: 'u' + Date.now(), name: regName, email: regEmail, password: regPass };
+        users.push(newUser);
+        saveUsers(users);
+        alert('Registration successful. You can now login.');
+        setTab('login');
+        setRegName(''); setRegEmail(''); setRegPass('');
+      }
+
+      function handleLogin(e){
+        e.preventDefault();
+        const users = getUsers();
+        const found = users.find(u=>u.email === loginEmail && u.password === loginPass);
+        if(!found){ alert('Invalid credentials'); return; }
+        onLogin({ id: found.id, name: found.name, email: found.email });
+        location.hash = 'home';
+      }
+
+      return (
+        <div style={{display:'grid',gap:12}}>
+          <div style={{display:'flex',gap:8}}>
+            <button className={"btn " + (tab==='login' ? '' : 'secondary')} onClick={()=>setTab('login')}>Login</button>
+            <button className={"btn " + (tab==='register' ? '' : 'secondary')} onClick={()=>setTab('register')}>Register</button>
+          </div>
+
+          {tab === 'login' ? (
+            <form onSubmit={handleLogin} style={{display:'grid',gap:8}}>
+              <label className="small muted">Email</label>
+              <input className="input" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} />
+              <label className="small muted">Password</label>
+              <input type="password" className="input" value={loginPass} onChange={e=>setLoginPass(e.target.value)} />
+              <div style={{display:'flex',gap:8,marginTop:6}}>
+                <button className="btn" type="submit">Login</button>
+                <button className="btn secondary" type="button" onClick={()=>{ setLoginEmail('demo@example.com'); setLoginPass('demo123'); }}>Fill demo</button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleRegister} style={{display:'grid',gap:8}}>
+              <label className="small muted">Name</label>
+              <input className="input" value={regName} onChange={e=>setRegName(e.target.value)} />
+              <label className="small muted">Email</label>
+              <input className="input" value={regEmail} onChange={e=>setRegEmail(e.target.value)} />
+              <label className="small muted">Password</label>
+              <input type="password" className="input" value={regPass} onChange={e=>setRegPass(e.target.value)} />
+              <div style={{display:'flex',gap:8,marginTop:6}}>
+                <button className="btn" type="submit">Register</button>
+                <button className="btn secondary" type="button" onClick={()=>{ setRegName('Test User'); setRegEmail('demo@example.com'); setRegPass('demo123'); }}>Fill demo</button>
+              </div>
+            </form>
+          )}
+        </div>
+      );
+    }
+
+    /* -------------------- Orders View -------------------- */
+    function OrdersView(){
+      const orders = lsGet(STORAGE_KEYS.ORDERS, []);
+      if(!orders || orders.length === 0) return <div className="empty">No orders placed yet.</div>;
+      return (
+        <div style={{display:'grid',gap:12}}>
+          {orders.map(o=>(
+            <div key={o.id} className="card">
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <div>
+                  <div style={{fontWeight:800}}>{o.id}</div>
+                  <div className="small muted">{new Date(o.date).toLocaleString()}</div>
+                </div>
+                <div style={{textAlign:'right'}}>
+                  <div style={{fontWeight:800}}>₹{o.total}</div>
+                  <div className="small muted">{o.status}</div>
+                </div>
+              </div>
+
+              <div style={{marginTop:10}}>
+                {o.items.map(it=>(
+                  <div key={it.id} style={{display:'flex',gap:8,alignItems:'center',marginBottom:6}}>
+                    <img src={it.img} className="thumb" alt="" />
+                    <div style={{flex:1}}>
+                      <div style={{fontWeight:700}}>{it.title}</div>
+                      <div className="small muted">₹{it.price} x {it.qty}</div>
+                    </div>
+                    <div style={{fontWeight:700}}>₹{it.price * it.qty}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    /* -------------------- Mount -------------------- */
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+  </script>
+</body>
+</html>

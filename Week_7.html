@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>React Task Manager</title>
+
+    <!-- React + ReactDOM (CDN) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Babel for JSX support in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+        .title {
+            text-align: center;
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #4c6ef5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .filterRow {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .filterBtn {
+            flex: 1;
+            margin: 5px;
+            padding: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #4c6ef5;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .taskCard {
+            display: flex;
+            justify-content: space-between;
+            background: #f4f4f4;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .btnSmall {
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #4c6ef5;
+            color: white;
+            border: none;
+            margin-left: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+
+function App() {
+  const [tasks, setTasks] = React.useState([]);
+  const [filter, setFilter] = React.useState("all");
+
+  const addTask = (text) => {
+    if (!text.trim()) return;
+    setTasks([...tasks, { id: Date.now(), text, completed: false }]);
+  };
+
+  const toggleComplete = (id) => {
+    setTasks(tasks.map(t =>
+      t.id === id ? { ...t, completed: !t.completed } : t
+    ));
+  };
+
+  const deleteTask = (id) => {
+    setTasks(tasks.filter(t => t.id !== id));
+  };
+
+  const editTask = (id, newText) => {
+    setTasks(tasks.map(t =>
+      t.id === id ? { ...t, text: newText } : t
+    ));
+  };
+
+  const filteredTasks =
+    filter === "completed"
+      ? tasks.filter(t => t.completed)
+      : filter === "pending"
+      ? tasks.filter(t => !t.completed)
+      : tasks;
+
+  return (
+    <div className="container">
+      <h1 className="title">React Task Manager</h1>
+
+      <TaskInput addTask={addTask} />
+
+      <FilterButtons setFilter={setFilter} />
+
+      <TaskList
+        tasks={filteredTasks}
+        toggleComplete={toggleComplete}
+        deleteTask={deleteTask}
+        editTask={editTask}
+      />
+    </div>
+  );
+}
+
+function TaskInput({ addTask }) {
+  const [text, setText] = React.useState("");
+
+  return (
+    <div className="row">
+      <input
+        value={text}
+        placeholder="Enter task..."
+        onChange={(e) => setText(e.target.value)}
+      />
+      <button className="btn" onClick={() => { addTask(text); setText(""); }}>
+        Add
+      </button>
+    </div>
+  );
+}
+
+function FilterButtons({ setFilter }) {
+  return (
+    <div className="filterRow">
+      <button className="filterBtn" onClick={() => setFilter("all")}>All</button>
+      <button className="filterBtn" onClick={() => setFilter("completed")}>Completed</button>
+      <button className="filterBtn" onClick={() => setFilter("pending")}>Pending</button>
+    </div>
+  );
+}
+
+function TaskList({ tasks, toggleComplete, deleteTask, editTask }) {
+  return (
+    <div>
+      {tasks.map(task =>
+        <TaskItem
+          key={task.id}
+          task={task}
+          toggleComplete={toggleComplete}
+          deleteTask={deleteTask}
+          editTask={editTask}
+        />
+      )}
+    </div>
+  );
+}
+
+function TaskItem({ task, toggleComplete, deleteTask, editTask }) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editText, setEditText] = React.useState(task.text);
+
+  return (
+    <div className="taskCard">
+      {isEditing ? (
+        <>
+          <input
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+          />
+          <button
+            className="btnSmall"
+            onClick={() => { editTask(task.id, editText); setIsEditing(false); }}
+          >
+            Save
+          </button>
+        </>
+      ) : (
+        <>
+          <span
+            style={{
+              textDecoration: task.completed ? "line-through" : "none",
+              color: task.completed ? "green" : "black",
+              cursor: "pointer"
+            }}
+            onClick={() => toggleComplete(task.id)}
+          >
+            {task.text}
+          </span>
+
+          <div>
+            <button className="btnSmall" onClick={() => setIsEditing(true)}>
+              Edit
+            </button>
+            <button
+              className="btnSmall"
+              style={{ background: "red" }}
+              onClick={() => deleteTask(task.id)}
+            >
+              Delete
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+</script>
+
+</body>
+</html>
