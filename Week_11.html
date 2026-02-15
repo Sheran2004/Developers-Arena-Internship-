@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Week 11 – Full Stack Blogging Platform (Simulator)</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f4f9;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .box {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      background: #4c6ef5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .output {
+      background: #111;
+      color: #0f0;
+      padding: 10px;
+      font-family: monospace;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Week 11: Full Stack Blogging Platform (HTML Simulator)</h1>
+
+<!-- ARCHITECTURE -->
+<div class="box">
+  <h2>Full Stack Architecture</h2>
+  <div class="output">
+Frontend: React (Simulated)
+Backend: Node.js + Express (Simulated)
+Database: MongoDB (Simulated)
+Auth: JWT + Context API (Simulated)
+  </div>
+</div>
+
+<!-- AUTH -->
+<div class="box">
+  <h2>User Authentication</h2>
+  <input id="email" placeholder="Email">
+  <input id="password" placeholder="Password">
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+  <button onclick="logout()">Logout</button>
+  <div id="authOut" class="output"></div>
+</div>
+
+<!-- CREATE BLOG -->
+<div class="box">
+  <h2>Create Blog Post (Protected)</h2>
+  <input id="blogTitle" placeholder="Blog Title">
+  <textarea id="blogContent" placeholder="Blog Content"></textarea>
+  <button onclick="createPost()">Create Post</button>
+  <div id="createOut" class="output"></div>
+</div>
+
+<!-- GET BLOGS -->
+<div class="box">
+  <h2>All Blog Posts</h2>
+  <button onclick="getPosts()">Fetch Posts</button>
+  <div id="postsOut" class="output"></div>
+</div>
+
+<!-- COMMENTS -->
+<div class="box">
+  <h2>Add Comment (Nested)</h2>
+  <input id="commentPostId" placeholder="Post ID">
+  <input id="commentText" placeholder="Comment text">
+  <button onclick="addComment()">Add Comment</button>
+  <div id="commentOut" class="output"></div>
+</div>
+
+<script>
+/* ============================
+   GLOBAL STATE (Context API)
+============================= */
+let authState = JSON.parse(localStorage.getItem("authState")) || {
+  user: null,
+  token: null
+};
+
+let users = JSON.parse(localStorage.getItem("users")) || [];
+let posts = JSON.parse(localStorage.getItem("posts")) || [];
+
+function saveState() {
+  localStorage.setItem("authState", JSON.stringify(authState));
+  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("posts", JSON.stringify(posts));
+}
+
+/* ============================
+   AUTH BACKEND (JWT)
+============================= */
+function register() {
+  users.push({
+    id: Date.now(),
+    email: email.value,
+    password: btoa(password.value)
+  });
+  saveState();
+  authOut.textContent = JSON.stringify({ status: 201, message: "User registered" }, null, 2);
+}
+
+function login() {
+  const user = users.find(
+    u => u.email === email.value && u.password === btoa(password.value)
+  );
+  if (!user) {
+    authOut.textContent = JSON.stringify({ status: 401, error: "Invalid credentials" }, null, 2);
+    return;
+  }
+  authState.user = user;
+  authState.token = "jwt_" + Date.now();
+  saveState();
+  authOut.textContent = JSON.stringify({ status: 200, token: authState.token }, null, 2);
+}
+
+function logout() {
+  authState.user = null;
+  authState.token = null;
+  saveState();
+  authOut.textContent = JSON.stringify({ status: 200, message: "Logged out" }, null, 2);
+}
+
+function protectedRoute() {
+  if (!authState.token) throw { status: 403, error: "Access denied" };
+}
+
+/* ============================
+   BLOG CRUD (Backend)
+============================= */
+function createPost() {
+  try {
+    protectedRoute();
+    const post = {
+      id: Date.now(),
+      title: blogTitle.value,
+      content: blogContent.value,
+      author: authState.user.email,
+      comments: [],
+      createdAt: new Date().toISOString()
+    };
+    posts.push(post);
+    saveState();
+    createOut.textContent = JSON.stringify({ status: 201, data: post }, null, 2);
+  } catch (e) {
+    createOut.textContent = JSON.stringify(e, null, 2);
+  }
+}
+
+function getPosts() {
+  postsOut.textContent = JSON.stringify({ status: 200, data: posts }, null, 2);
+}
+
+/* ============================
+   COMMENTS (Nested)
+============================= */
+function addComment() {
+  try {
+    protectedRoute();
+    const post = posts.find(p => p.id == commentPostId.value);
+    if (!post) throw { status: 404, error: "Post not found" };
+
+    post.comments.push({
+      id: Date.now(),
+      text: commentText.value,
+      user: authState.user.email,
+      createdAt: new Date().toISOString()
+    });
+
+    saveState();
+    commentOut.textContent = JSON.stringify({ status: 201, data: post.comments }, null, 2);
+  } catch (e) {
+    commentOut.textContent = JSON.stringify(e, null, 2);
+  }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Week 9 – Node.js Backend Simulator</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f4f9;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .box {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      background: #4c6ef5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .output {
+      background: #111;
+      color: #0f0;
+      padding: 10px;
+      font-family: monospace;
+      margin-top: 10px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Week 9: Node.js & Express (HTML Backend Simulator)</h1>
+
+<!-- ENVIRONMENT -->
+<div class="box">
+  <h2>Environment Variables (.env)</h2>
+  <div class="output">
+PORT=3000
+JWT_SECRET=supersecretkey
+NODE_ENV=development
+  </div>
+</div>
+
+<!-- USER AUTH -->
+<div class="box">
+  <h2>User Authentication (JWT Simulation)</h2>
+  <input id="username" placeholder="Username">
+  <input id="password" placeholder="Password">
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+  <div id="authOutput" class="output"></div>
+</div>
+
+<!-- CREATE POST -->
+<div class="box">
+  <h2>Create Blog Post (POST /api/posts)</h2>
+  <input id="postTitle" placeholder="Post Title">
+  <textarea id="postContent" placeholder="Post Content"></textarea>
+  <button onclick="createPost()">Create Post</button>
+  <div id="postCreateOutput" class="output"></div>
+</div>
+
+<!-- GET POSTS -->
+<div class="box">
+  <h2>Get All Posts (GET /api/posts)</h2>
+  <button onclick="getPosts()">Fetch Posts</button>
+  <div id="postsOutput" class="output"></div>
+</div>
+
+<!-- UPDATE POST -->
+<div class="box">
+  <h2>Update Post (PUT /api/posts/:id)</h2>
+  <input id="updateId" placeholder="Post ID">
+  <input id="updateTitle" placeholder="New Title">
+  <textarea id="updateContent" placeholder="New Content"></textarea>
+  <button onclick="updatePost()">Update</button>
+  <div id="updateOutput" class="output"></div>
+</div>
+
+<!-- DELETE POST -->
+<div class="box">
+  <h2>Delete Post (DELETE /api/posts/:id)</h2>
+  <input id="deleteId" placeholder="Post ID">
+  <button onclick="deletePost()">Delete</button>
+  <div id="deleteOutput" class="output"></div>
+</div>
+
+<script>
+/* ================================
+   FAKE EXPRESS BACKEND
+================================ */
+
+// Database (Local Storage)
+let users = JSON.parse(localStorage.getItem("users")) || [];
+let posts = JSON.parse(localStorage.getItem("posts")) || [];
+let token = localStorage.getItem("token") || null;
+
+// Middleware simulation
+function authMiddleware() {
+  if (!token) {
+    throw { status: 401, message: "Unauthorized: JWT missing" };
+  }
+}
+
+// Save DB
+function saveDB() {
+  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("posts", JSON.stringify(posts));
+}
+
+/* ================================
+   AUTH ROUTES
+================================ */
+
+function register() {
+  const u = username.value;
+  const p = password.value;
+
+  users.push({ id: Date.now(), u, p });
+  saveDB();
+
+  authOutput.textContent = JSON.stringify({
+    status: 201,
+    message: "User registered"
+  }, null, 2);
+}
+
+function login() {
+  const u = username.value;
+  const p = password.value;
+
+  const user = users.find(x => x.u === u && x.p === p);
+  if (!user) {
+    authOutput.textContent = JSON.stringify({
+      status: 401,
+      error: "Invalid credentials"
+    }, null, 2);
+    return;
+  }
+
+  token = "jwt_" + Date.now();
+  localStorage.setItem("token", token);
+
+  authOutput.textContent = JSON.stringify({
+    status: 200,
+    token
+  }, null, 2);
+}
+
+/* ================================
+   POST ROUTES
+================================ */
+
+function createPost() {
+  try {
+    authMiddleware();
+
+    const post = {
+      id: Date.now(),
+      title: postTitle.value,
+      content: postContent.value,
+      createdAt: new Date().toISOString()
+    };
+
+    posts.push(post);
+    saveDB();
+
+    postCreateOutput.textContent = JSON.stringify({
+      status: 201,
+      data: post
+    }, null, 2);
+
+  } catch (err) {
+    postCreateOutput.textContent = JSON.stringify(err, null, 2);
+  }
+}
+
+function getPosts() {
+  postsOutput.textContent = JSON.stringify({
+    status: 200,
+    data: posts
+  }, null, 2);
+}
+
+function updatePost() {
+  try {
+    authMiddleware();
+
+    const id = parseInt(updateId.value);
+    const post = posts.find(p => p.id === id);
+    if (!post) throw { status: 404, message: "Post not found" };
+
+    post.title = updateTitle.value || post.title;
+    post.content = updateContent.value || post.content;
+    saveDB();
+
+    updateOutput.textContent = JSON.stringify({
+      status: 200,
+      data: post
+    }, null, 2);
+
+  } catch (err) {
+    updateOutput.textContent = JSON.stringify(err, null, 2);
+  }
+}
+
+function deletePost() {
+  try {
+    authMiddleware();
+
+    const id = parseInt(deleteId.value);
+    posts = posts.filter(p => p.id !== id);
+    saveDB();
+
+    deleteOutput.textContent = JSON.stringify({
+      status: 200,
+      message: "Post deleted"
+    }, null, 2);
+
+  } catch (err) {
+    deleteOutput.textContent = JSON.stringify(err, null, 2);
+  }
+}
+</script>
+
+</body>
+</html>

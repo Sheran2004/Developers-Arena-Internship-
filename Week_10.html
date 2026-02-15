@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Week 10 – MongoDB Task Management API (Simulator)</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f4f9;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .box {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      background: #4c6ef5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .output {
+      background: #111;
+      color: #0f0;
+      padding: 10px;
+      font-family: monospace;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Week 10: MongoDB Task Management API (HTML Simulator)</h1>
+
+<!-- DATABASE -->
+<div class="box">
+  <h2>MongoDB Atlas (Simulated)</h2>
+  <div class="output">
+Database: task_management
+Collections:
+- users
+- tasks
+Indexes:
+- tasks.user + completed
+- tasks.dueDate
+  </div>
+</div>
+
+<!-- USER AUTH -->
+<div class="box">
+  <h2>User Authentication (Password Hash + JWT)</h2>
+  <input id="uName" placeholder="Username">
+  <input id="uPass" placeholder="Password">
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+  <div id="authOut" class="output"></div>
+</div>
+
+<!-- CREATE TASK -->
+<div class="box">
+  <h2>Create Task (POST /api/tasks)</h2>
+  <input id="tTitle" placeholder="Task Title">
+  <textarea id="tDesc" placeholder="Description"></textarea>
+  <select id="tPriority">
+    <option>low</option>
+    <option selected>medium</option>
+    <option>high</option>
+  </select>
+  <select id="tCategory">
+    <option>work</option>
+    <option>personal</option>
+    <option>shopping</option>
+    <option>health</option>
+    <option>other</option>
+  </select>
+  <button onclick="createTask()">Create Task</button>
+  <div id="createOut" class="output"></div>
+</div>
+
+<!-- GET TASKS -->
+<div class="box">
+  <h2>Get Tasks (GET /api/tasks)</h2>
+  <button onclick="getTasks()">Fetch Tasks</button>
+  <div id="tasksOut" class="output"></div>
+</div>
+
+<!-- UPDATE TASK -->
+<div class="box">
+  <h2>Update Task (PUT /api/tasks/:id)</h2>
+  <input id="updId" placeholder="Task ID">
+  <input id="updTitle" placeholder="New Title">
+  <button onclick="updateTask()">Update</button>
+  <div id="updateOut" class="output"></div>
+</div>
+
+<!-- DELETE TASK -->
+<div class="box">
+  <h2>Delete Task (DELETE /api/tasks/:id)</h2>
+  <input id="delId" placeholder="Task ID">
+  <button onclick="deleteTask()">Delete</button>
+  <div id="deleteOut" class="output"></div>
+</div>
+
+<script>
+/* ===============================
+   DATABASE (MongoDB Simulation)
+================================ */
+let users = JSON.parse(localStorage.getItem("users")) || [];
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let token = localStorage.getItem("token");
+let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+function saveDB() {
+  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  localStorage.setItem("token", token);
+  localStorage.setItem("currentUser", JSON.stringify(currentUser));
+}
+
+/* ===============================
+   AUTH + HASHING + JWT
+================================ */
+function hashPassword(p) {
+  return btoa(p); // Simulated hashing
+}
+
+function register() {
+  users.push({
+    id: Date.now(),
+    username: uName.value,
+    password: hashPassword(uPass.value)
+  });
+  saveDB();
+  authOut.textContent = JSON.stringify({ status: 201, message: "User registered" }, null, 2);
+}
+
+function login() {
+  const user = users.find(u =>
+    u.username === uName.value &&
+    u.password === hashPassword(uPass.value)
+  );
+  if (!user) {
+    authOut.textContent = JSON.stringify({ status: 401, error: "Invalid credentials" }, null, 2);
+    return;
+  }
+  token = "jwt_" + Date.now();
+  currentUser = user;
+  saveDB();
+  authOut.textContent = JSON.stringify({ status: 200, token }, null, 2);
+}
+
+function authCheck() {
+  if (!token) throw { status: 401, error: "Unauthorized" };
+}
+
+/* ===============================
+   TASK CRUD (Mongoose Simulation)
+================================ */
+function validateTask(title) {
+  if (!title || title.length < 3) {
+    throw { status: 400, error: "Title validation failed" };
+  }
+}
+
+function createTask() {
+  try {
+    authCheck();
+    validateTask(tTitle.value);
+
+    const task = {
+      _id: Date.now(),
+      title: tTitle.value.charAt(0).toUpperCase() + tTitle.value.slice(1),
+      description: tDesc.value,
+      completed: false,
+      priority: tPriority.value,
+      category: tCategory.value,
+      user: currentUser.id,
+      createdAt: new Date().toISOString()
+    };
+
+    tasks.push(task);
+    saveDB();
+
+    createOut.textContent = JSON.stringify({ status: 201, data: task }, null, 2);
+  } catch (e) {
+    createOut.textContent = JSON.stringify(e, null, 2);
+  }
+}
+
+function getTasks() {
+  const userTasks = tasks.filter(t => t.user === currentUser?.id);
+  tasksOut.textContent = JSON.stringify({
+    status: 200,
+    count: userTasks.length,
+    data: userTasks
+  }, null, 2);
+}
+
+function updateTask() {
+  try {
+    authCheck();
+    const task = tasks.find(t => t._id == updId.value);
+    if (!task) throw { status: 404, error: "Task not found" };
+
+    task.title = updTitle.value || task.title;
+    saveDB();
+
+    updateOut.textContent = JSON.stringify({ status: 200, data: task }, null, 2);
+  } catch (e) {
+    updateOut.textContent = JSON.stringify(e, null, 2);
+  }
+}
+
+function deleteTask() {
+  try {
+    authCheck();
+    tasks = tasks.filter(t => t._id != delId.value);
+    saveDB();
+
+    deleteOut.textContent = JSON.stringify({ status: 200, message: "Task deleted" }, null, 2);
+  } catch (e) {
+    deleteOut.textContent = JSON.stringify(e, null, 2);
+  }
+}
+</script>
+
+</body>
+</html>
